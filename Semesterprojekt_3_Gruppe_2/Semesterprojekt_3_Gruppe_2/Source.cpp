@@ -7,5 +7,7 @@ void main()
 	{
 		char c = i;
 		std::cout << c << " ";
+		std::cout << "HESTELORT" << std::endl;
+		//Jeg har lavet en båd af lort
 	}
 }
