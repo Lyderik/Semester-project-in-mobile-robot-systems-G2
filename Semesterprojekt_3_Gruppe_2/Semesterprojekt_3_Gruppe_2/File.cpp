@@ -45,7 +45,8 @@ char * File::readAllBytes()
 		byteCount++;
 		if (byteCount % 1000000 == 0)
 		{
-			std::cout << byteCount / 1000000 << "/" << length/1000000 << std::endl;
+			double percentage = ((double)byteCount / (double)length) * 100.0;
+			std::cout << byteCount / 1000000 << "/" << length/1000000 << " " << percentage << "%" << std::endl;
 		}
 	}
 
