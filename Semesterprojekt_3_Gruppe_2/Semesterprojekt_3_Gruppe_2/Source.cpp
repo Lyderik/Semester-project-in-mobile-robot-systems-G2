@@ -4,12 +4,6 @@
 #include <math.h>
 #include "WaveBuffer.h"
 
-#define NUM_SECONDS   (4)
-
-#ifndef M_PI
-#define M_PI  (3.14159265)
-#endif
-
 
 class ScopedPaHandler
 {
@@ -37,16 +31,14 @@ private:
 int main(void)
 {
 
-	WaveBuffer sine;
-
-	//printf("PortAudio Test: output sine wave. SR = %d, BufSize = %d\n", SAMPLE_RATE, FRAMES_PER_BUFFER);
+	WaveBuffer wBuffer;
 
 	ScopedPaHandler paInit;
 	if (paInit.result() != paNoError) goto error;
 
-	if (sine.open(Pa_GetDefaultOutputDevice()))
+	if (wBuffer.open(Pa_GetDefaultOutputDevice()))
 	{
-		if (sine.start())
+		if (wBuffer.start())
 		{
 			while (true) {
 				std::cout << "type in random shit to generate tones from:\n";
@@ -54,13 +46,13 @@ int main(void)
 				std::getline(std::cin, tones);
 				if (tones == "exit") break;
 				for (int i = 0; i < tones.length(); i++) {
-					sine.put((signed char) tones[i] % 16);
+					wBuffer.put((signed char) tones[i] % 16);
 				}
 			}
-			sine.stop();
+			wBuffer.stop();
 		}
 
-		sine.close();
+		wBuffer.close();
 	}
 
 	printf("Test finished.\n");
