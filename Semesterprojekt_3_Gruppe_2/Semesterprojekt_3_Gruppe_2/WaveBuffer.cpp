@@ -1,6 +1,5 @@
 #include "WaveBuffer.h"
 
-
 const double WaveBuffer::piProducts[16][2] = {
 	{ piProduct(findLoDTMFFreq(0)), piProduct(findHiDTMFFreq(0)) },
 	{ piProduct(findLoDTMFFreq(1)), piProduct(findHiDTMFFreq(1)) },
@@ -22,12 +21,14 @@ const double WaveBuffer::piProducts[16][2] = {
 
 int WaveBuffer::sampleRate = 44100;
 
-WaveBuffer::WaveBuffer()
+WaveBuffer::WaveBuffer(int toneLenght)
 {
 	iPointer = 0;
 	oPointer = 0;
 	sPointer = 0;
-	waveNumOfSamples = 4410;
+	waveNumOfSamples = sampleRate * toneLenght / 1000;
+	waveNumOfFadeSamples = waveNumOfSamples/5;
+	waveFadeBegin = waveNumOfSamples - waveNumOfFadeSamples;
 	bufferSize = 200;
 	phase = 0;
 	buffer = std::vector<int>(bufferSize, 0);
@@ -39,26 +40,29 @@ WaveBuffer::~WaveBuffer()
 
 }
 
-int WaveBuffer::getBufferLength()
-{
-	return bufferSize;
-}
 
-bool WaveBuffer::put(int b)
+int WaveBuffer::put(int b)
 {
+	if (b < 0 || b > 15)
+		return 2;
 	if ((iPointer + 1) % bufferSize == oPointer % bufferSize)
-		return false;
+		return 1;
 	buffer[iPointer++] = b;
 	if (iPointer == bufferSize)
 		iPointer = 0;
-	return true;
+	return 0;
 }
 
 double WaveBuffer::getNext()
 {
 	if (oPointer != iPointer) {
-		double r = 0.2 * sin( sPointer * piProducts[ buffer[oPointer] ][0] + phase) + 0.2 * sin( sPointer * piProducts[ buffer[oPointer] ][1] + phase);
-
+		double r = 0.5 * sin(sPointer * piProducts[buffer[oPointer]][0]) + 0.5 * sin(sPointer * piProducts[buffer[oPointer]][1]);
+		/* Fade magic */
+		if (sPointer > waveFadeBegin)
+			r *= (0.5 * cos(M_PI * (sPointer - waveFadeBegin) / waveNumOfFadeSamples) + 0.5);
+		if (sPointer < waveNumOfFadeSamples)
+			r *= (0.5 * cos(M_PI * (waveNumOfFadeSamples - sPointer) / waveNumOfFadeSamples) + 0.5);
+		/* end Fade magic */
 		if (++sPointer == waveNumOfSamples) {
 			sPointer = 0;
 			if (++oPointer == bufferSize)
@@ -118,8 +122,8 @@ bool WaveBuffer::open(PaDeviceIndex index)
 		&stream,
 		NULL, /* no input */
 		&outputParameters,
-		44100,
-		paFramesPerBufferUnspecified,
+		sampleRate,
+		waveNumOfSamples,
 		paClipOff,      /* we won't output out of range samples so don't bother clipping them */
 		&WaveBuffer::paCallback,
 		this            /* Using 'this' for userData so we can cast to Sine* in paCallback method */

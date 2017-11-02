@@ -145,10 +145,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="InputBuffer.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="TestBuffer.cpp" />
     <ClCompile Include="WaveBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="InputBuffer.h" />
+    <ClInclude Include="TestBuffer.h" />
     <ClInclude Include="WaveBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
