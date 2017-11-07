@@ -56,7 +56,7 @@ int WaveBuffer::put(int b)
 double WaveBuffer::getNext()
 {
 	if (oPointer != iPointer) {
-		double r = 0.5 * sin(sPointer * piProducts[buffer[oPointer]][0]) + 0.5 * sin(sPointer * piProducts[buffer[oPointer]][1]);
+		double r = 0.4 * sin(sPointer * piProducts[buffer[oPointer]][0]) + 0.4 * sin(sPointer * piProducts[buffer[oPointer]][1]);
 		/* Fade magic */
 		if (sPointer > waveFadeBegin)
 			r *= (0.5 * cos(M_PI * (sPointer - waveFadeBegin) / waveNumOfFadeSamples) + 0.5);

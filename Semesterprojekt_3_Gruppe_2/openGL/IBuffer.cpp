@@ -1,25 +1,32 @@
-#include "InputBuffer.h"
+#include "IBuffer.h"
 #include <iostream>
 #include <iomanip> 
 
-int InputBuffer::sampleRate = 44100;
-const int InputBuffer::DTMF_FREQ[8] = { 697, 770, 852, 941, 1209, 1336, 1477, 1633 };
+int IBuffer::sampleRate = 44100;
+const int IBuffer::DTMF_FREQ[8] = { 697, 770, 852, 941, 1209, 1336, 1447, 1633 };
 
-InputBuffer::InputBuffer()
+IBuffer::IBuffer()
 {
-	sampleBufferSize = 800;
-	bufferSize = 5* sampleBufferSize;
+	IBuffer(1024);
+}
+
+IBuffer::IBuffer(int bz)
+{
+	sampleBufferSize = bz/4;
+	bufferSize = 4 * sampleBufferSize;
 	buffer = std::vector<float>(bufferSize);
+	fftBuffer = new std::complex<float>[bufferSize];
+	fftOut = new std::complex<float>[bufferSize];
+	fft = std::vector<float>(512);
 	tempcounter = 0;
-	
 }
 
-InputBuffer::~InputBuffer()
+IBuffer::~IBuffer()
 {
 
 }
 
-bool InputBuffer::open(PaDeviceIndex index)
+bool IBuffer::open(PaDeviceIndex index)
 {
 	PaStreamParameters inputParameters;
 
@@ -32,10 +39,10 @@ bool InputBuffer::open(PaDeviceIndex index)
 	if (pInfo != 0)
 	{
 
-		printf("Output device name: '%s'\n", pInfo->name);
+		/*printf("Output device name: '%s'\n", pInfo->name);
 		std::cout << pInfo->maxInputChannels << std::endl;
 		std::cout << pInfo->maxOutputChannels << std::endl;
-		std::cout << pInfo->defaultSampleRate << std::endl;
+		std::cout << pInfo->defaultSampleRate << std::endl;*/
 	}
 
 	inputParameters.channelCount = 1;       /* mono input */
@@ -45,12 +52,12 @@ bool InputBuffer::open(PaDeviceIndex index)
 
 	PaError err = Pa_OpenStream(
 		&stream,
-		&inputParameters, 
+		&inputParameters,
 		NULL, /* no output */
 		sampleRate,
 		sampleBufferSize,
 		paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-		&InputBuffer::paCallback,
+		&IBuffer::paCallback,
 		this            /* Using 'this' for userData so we can cast to Sine* in paCallback method */
 	);
 
@@ -61,7 +68,7 @@ bool InputBuffer::open(PaDeviceIndex index)
 		return false;
 	}
 
-	err = Pa_SetStreamFinishedCallback(stream, &InputBuffer::paStreamFinished);
+	err = Pa_SetStreamFinishedCallback(stream, &IBuffer::paStreamFinished);
 
 	if (err != paNoError)
 	{
@@ -74,7 +81,7 @@ bool InputBuffer::open(PaDeviceIndex index)
 	return true;
 }
 
-bool InputBuffer::close()
+bool IBuffer::close()
 {
 	if (stream == 0)
 		return false;
@@ -86,7 +93,7 @@ bool InputBuffer::close()
 }
 
 
-bool InputBuffer::start()
+bool IBuffer::start()
 {
 	if (stream == 0)
 		return false;
@@ -95,7 +102,7 @@ bool InputBuffer::start()
 	return (err == paNoError);
 }
 
-bool InputBuffer::stop()
+bool IBuffer::stop()
 {
 	if (stream == 0)
 		return false;
@@ -104,7 +111,11 @@ bool InputBuffer::stop()
 
 	return (err == paNoError);
 }
-int InputBuffer::paCallbackMethod(const void *inputBuffer, void *outputBuffer,
+std::vector<float> IBuffer::getFFT()
+{
+	return fft;
+}
+int IBuffer::paCallbackMethod(const void *inputBuffer, void *outputBuffer,
 	unsigned long framesPerBuffer,
 	const PaStreamCallbackTimeInfo* timeInfo,
 	PaStreamCallbackFlags statusFlags)
@@ -114,19 +125,25 @@ int InputBuffer::paCallbackMethod(const void *inputBuffer, void *outputBuffer,
 	(void)statusFlags;
 
 	const float * in = (const float*)inputBuffer;
-	int endStartFrame = 4 * sampleBufferSize;
+	int endStarFrame = 3 * sampleBufferSize;
+	for (int i = 0; i < endStarFrame; i++)
+		fftBuffer[i] = fftBuffer[i + sampleBufferSize];
 	for (int i = 0; i<framesPerBuffer; i++)
-	{	
-		//std::cout << *in++ << "\n";
-		//buffer[4 * sampleBufferSize + i] = in[i];
-		buffer[endStartFrame + i] = *(in + i);
+		fftBuffer[endStarFrame + i] = *(in + i);
+	for (int i = 0; i < bufferSize; i++)
+		fftOut[i] = fftBuffer[i];
+
+	fft2(fftOut, bufferSize);
+	//int frqz[8] = { 16,18,20,22,28,31,34,38 };
+	int fftLenght = bufferSize / 2;
+	for (int i = 0; i < fftLenght; i++) {
+		fft[i] = abs(fftOut[i]);
 	}
-	std::vector<float> gm = goertzel_mag();
-	std::cout << std::fixed;
+	/*std::cout << std::fixed;
 	for (int f = 0; f < 8; f++) {
-		std::cout << std::setw(7) << std::setprecision(2) << std::left << gm[f];
+		std::cout << std::setw(10) << std::setprecision(2) << abs(fftOut[frqz[f]]);
 	}
-	std::cout << "\r";
+	std::cout << "\r";*/
 	//if (tempcounter++ > 4) {
 	//	int i = 0;
 	//}
@@ -138,7 +155,7 @@ int InputBuffer::paCallbackMethod(const void *inputBuffer, void *outputBuffer,
 ** It may called at interrupt level on some machines so don't do anything
 ** that could mess up the system like calling malloc() or free().
 */
-int InputBuffer::paCallback(const void *inputBuffer, void *outputBuffer,
+int IBuffer::paCallback(const void *inputBuffer, void *outputBuffer,
 	unsigned long framesPerBuffer,
 	const PaStreamCallbackTimeInfo* timeInfo,
 	PaStreamCallbackFlags statusFlags,
@@ -146,63 +163,28 @@ int InputBuffer::paCallback(const void *inputBuffer, void *outputBuffer,
 {
 	/* Here we cast userData to Sine* type so we can call the instance method paCallbackMethod, we can do that since
 	we called Pa_OpenStream with 'this' for userData */
-	return ((InputBuffer*)userData)->paCallbackMethod(inputBuffer, outputBuffer,
+	return ((IBuffer*)userData)->paCallbackMethod(inputBuffer, outputBuffer,
 		framesPerBuffer,
 		timeInfo,
 		statusFlags);
 }
 
 
-void InputBuffer::paStreamFinishedMethod()
+void IBuffer::paStreamFinishedMethod()
 {
-	printf("Stream Completed: %s\n", message);
+	//printf("Stream Completed: %s\n", message);
 }
 
 /*
 * This routine is called by portaudio when playback is done.
 */
-void InputBuffer::paStreamFinished(void* userData)
+void IBuffer::paStreamFinished(void* userData)
 {
-	return ((InputBuffer*)userData)->paStreamFinishedMethod();
+	return ((IBuffer*)userData)->paStreamFinishedMethod();
 }
 
 
-/*float InputBuffer::goertzel_mag(int freq) {
-	int     k, i;
-	float   floatnumSamples;
-	float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
-
-	float  scalingFactor = bufferSize / 2.0;
-
-	floatnumSamples = (float)bufferSize;
-	k = (int)(0.5 + ((floatnumSamples * freq) / sampleRate));
-	omega = (2.0 * M_PI * k) / floatnumSamples;
-	sine = sin(omega);
-	cosine = cos(omega);
-	coeff = 2.0 * cosine;
-	q0 = 0;
-	q1 = 0;
-	q2 = 0;
-
-	for (i = 0; i<(bufferSize); i++)
-	{
-		q0 = coeff * q1 - q2 + buffer[i];
-		q2 = q1;
-		q1 = q0;
-		if (sampleBufferSize * 4 > i) 
-			buffer[i] = buffer[i + sampleBufferSize];
-	}
-
-	// calculate the real and imaginary results
-	// scaling appropriately
-	real = (q1 - q2 * cosine) / scalingFactor;
-	imag = (q2 * sine) / scalingFactor;
-
-	magnitude = sqrt(real*real + imag*imag);
-	return magnitude;
-}*/
-
-std::vector<float> InputBuffer::goertzel_mag() {
+std::vector<float> IBuffer::goertzel_mag() {
 	int     k[8];
 	float   floatnumSamples;
 	float   omega[8], sine[8], cosine[8], coeff[8], q0[8], q1[8], q2[8];
@@ -241,4 +223,46 @@ std::vector<float> InputBuffer::goertzel_mag() {
 		magnitude[f] = sqrt(real*real + imag*imag);
 	}
 	return magnitude;
+}
+
+// separate even/odd elements to lower/upper halves of array respectively.
+// Due to Butterfly combinations, this turns out to be the simplest way 
+// to get the job done without clobbering the wrong elements.
+void IBuffer::separate(std::complex<float>* a, int n) {
+	std::complex<float>* b = new std::complex<float>[n / 2];  // get temp heap storage
+	for (int i = 0; i<n / 2; i++)    // copy all odd elements to heap storage
+		b[i] = a[i * 2 + 1];
+	for (int i = 0; i<n / 2; i++)    // copy all even elements to lower-half of a[]
+		a[i] = a[i * 2];
+	for (int i = 0; i<n / 2; i++)    // copy all odd (from heap) to upper-half of a[]
+		a[i + n / 2] = b[i];
+	delete[] b;                 // delete heap storage
+}
+
+// N must be a power-of-2, or bad things will happen.
+// Currently no check for this condition.
+//
+// N input samples in X[] are FFT'd and results left in X[].
+// Because of Nyquist theorem, N samples means 
+// only first N/2 FFT results in X[] are the answer.
+// (upper half of X[] is a reflection with no new information).
+void IBuffer::fft2(std::complex<float>* X, int N) {
+	if (N < 2) {
+		// bottom of recursion.
+		// Do nothing here, because already X[0] = x[0]
+	}
+	else {
+		separate(X, N);      // all evens to lower half, all odds to upper half
+		fft2(X, N / 2);   // recurse even items
+		fft2(X + N / 2, N / 2);   // recurse odd  items
+								  // combine results of two half recursions
+		for (int k = 0; k<N / 2; k++) {
+			std::complex<float> e = X[k];   // even
+			std::complex<float> o = X[k + N / 2];   // odd
+													// w is the "twiddle-factor"
+			std::complex<float> w = exp(std::complex<float>(0, -2.*M_PI*k / N));
+			X[k] = e + w * o;
+			X[k + N / 2] = e - w * o;
+		}
+	}
 }

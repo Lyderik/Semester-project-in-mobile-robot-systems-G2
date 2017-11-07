@@ -8,18 +8,21 @@
 #define M_PI  (3.14159265)
 #endif
 
-class TestBuffer
+class IBuffer
 {
 public:
-	TestBuffer();
-	~TestBuffer();
+	IBuffer();
+	IBuffer(int bz);
+	~IBuffer();
 	PaStream *stream;
 	bool open(PaDeviceIndex index);
 	bool close();
 	bool start();
 	bool stop();
+	std::vector<float> getFFT();
 
 private:
+	std::vector<float> fft;
 	std::complex<float>* fftBuffer;
 	std::complex<float>* fftOut;
 	int tempcounter;
