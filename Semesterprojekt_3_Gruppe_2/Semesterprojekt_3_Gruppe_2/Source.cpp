@@ -1,11 +1,19 @@
+#include "Header.h"
 #include <iostream>
 #include <string>
+#include <array>
 
-void main()
-{
-	for (int i = 0; i < 256; i++)
-	{
-		char c = i;
-		std::cout << c << " ";
-	}
+using namespace std;
+
+void main() {
+
+	Header head;
+
+	head.setType(0, 1, 1);
+	head.toggleBit(3, 3);
+	head.toggleBit(3, 3);
+	head.toggleBit(3, 3);
+	head.toggleBit(3, 3);
+	head.toggleBit(3, 3);
+	head.toggleBit(3, 3);
 }
