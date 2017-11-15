@@ -7,7 +7,7 @@ Header::Header()
 	header[2] = 00000000;
 	header[3] = 00000000;
 	header[4] = 00000000;
-	data[0] = 11111111;
+	data[0]   = 11111111;
 }
 
 void Header::setBit(int nr, int s)
