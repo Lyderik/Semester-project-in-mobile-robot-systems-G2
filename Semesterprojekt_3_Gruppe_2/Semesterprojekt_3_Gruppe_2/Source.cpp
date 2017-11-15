@@ -8,4 +8,6 @@ void main()
 		char c = i;
 		std::cout << c << " ";
 	}
+	
+
 }
