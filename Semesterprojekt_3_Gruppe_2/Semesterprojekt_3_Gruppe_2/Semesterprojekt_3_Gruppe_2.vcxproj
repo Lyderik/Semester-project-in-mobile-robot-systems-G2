@@ -133,18 +133,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\DirectoryHandler.cpp" />
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\MyForm.cpp" />
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\OBuffer.cpp" />
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\TreeElement.cpp" />
+    <ClCompile Include="DirectoryHandler.cpp" />
+    <ClCompile Include="MyForm.cpp" />
+    <ClCompile Include="OBuffer.cpp" />
     <ClCompile Include="Source.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\include\dirent.h" />
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\DirectoryHandler.h" />
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\MyForm.h" />
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\OBuffer.h" />
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\TreeElement.h" />
+    <ClCompile Include="TreeElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -152,6 +145,12 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DirectoryHandler.h" />
+    <ClInclude Include="MyForm.h" />
+    <ClInclude Include="OBuffer.h" />
+    <ClInclude Include="TreeElement.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

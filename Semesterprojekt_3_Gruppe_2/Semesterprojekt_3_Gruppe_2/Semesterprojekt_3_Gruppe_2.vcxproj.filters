@@ -18,33 +18,30 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\DirectoryHandler.cpp">
+    <ClCompile Include="DirectoryHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\MyForm.cpp">
+    <ClCompile Include="MyForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\OBuffer.cpp">
+    <ClCompile Include="OBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\TreeElement.cpp">
+    <ClCompile Include="TreeElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\DirectoryHandler.h">
+    <ClInclude Include="DirectoryHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\MyForm.h">
+    <ClInclude Include="MyForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\OBuffer.h">
+    <ClInclude Include="OBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Dropbox\Programming\C++\CLR_GUI_Test_1\CLR_GUI_Test_1\TreeElement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\include\dirent.h">
+    <ClInclude Include="TreeElement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
